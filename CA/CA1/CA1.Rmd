@@ -11,10 +11,10 @@ output:
 # Load the necessary library
 library(here)
 library(dplyr)
-library(reshape2)
+library(reshape2) #for melt()
 library(ggplot2)
 library(patchwork)
-library(tidyr)
+library(tidyr)  #for pivot_longer
 ```
 
 
@@ -42,49 +42,73 @@ mean_vectors
 
 
 ```{r}
-# #Qtn 2 function
-# # Function to generate a heat map for a given time period
-# generate_heat_map <- function(time_period) {
-#   filtered_data <- data[data$TimePeriod == time_period,]
-#   cor_matrix <- cor(filtered_data[,1:4]) # Assuming the first four columns are the variables
-# 
-#   # Melt the correlation matrix for ggplot
-#   melted_cor_matrix <- melt(cor_matrix)
-# 
-#   # Plot
-#   ggplot(melted_cor_matrix, aes(x = Var1, y = Var2, fill = value)) +
-#     geom_tile() +
-#     geom_text(aes(label = sprintf("%.2f", value)), color = "black", size = 3) +
-#     #scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-#    #                      midpoint = 0, limit = c(-1,1), space = "Lab", 
-#    #                      name="Pearson\nCorrelation") +
-#     theme_minimal() +
-#     theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 9, hjust = 1, family = "Arial"),
-#           axis.text.y = element_text(size = 9, family = "Arial"),
-#           plot.title = element_text(size = 14, family = "Arial")) +
-#     labs(x = '', y = '', title = paste("Correlation Matrix Heat Map \n for Time Period", time_period))
-# }
+#Qtn 2 function
+# Function to generate a heat map for a given time period
+generate_heat_map <- function(time_period, show_y_axis, show_legend){
+  filtered_data <- data[data$TimePeriod == time_period,]
+  df_corr_data <- select(filtered_data, -TimePeriod)
+  # Assuming df_corr_data is your dataframe
+  corr_matrix <- cor(df_corr_data)
+  
+  # # Melt the correlation matrix for ggplot
+  melted_corr_matrix <- melt(corr_matrix)
+  # Exclude the lower triangle and diagonal
+  # melted_corr_matrix$value[melted_corr_matrix$Var1 >= melted_corr_matrix$Var2] <- NA
+  
+  # Plot
+  p <- ggplot(melted_corr_matrix, aes(x = Var1, y = Var2, fill = value)) +
+    geom_tile() +
+    geom_text(aes(label = sprintf("%.2f", value)), color = "black", size = 3) + # Adds text labels
+    scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                        midpoint = 0, limit = c(-1,1), space = "Lab",
+                        name="Correlation") +
+    theme_minimal() +
+    labs(x = '', y = '') +
+    coord_fixed()
 
+
+  if (!show_legend) {
+    p <- p + theme(legend.position = "none")
+  } else {
+    # Position the legend to the left of the chart
+    p <- p + theme(legend.position = "left")
+  }
+  return(p)
+}
 ```
 
 
 ```{r}
 # #Q2 cntd
-# # Generate heat map for time periods
-# time_periods <- unique(data$TimePeriod)
-# plot_list <- list()
-# 
-# for (time_period in time_periods) {
-#   plot_list[[time_period]] <- generate_heat_map(time_period)
-# }
-# 
-# # Combine the plots. Adjust the layout with `plot_layout()`
-# combined_plot <- wrap_plots(plot_list, ncol = 3) + 
-#   plot_layout(guides = 'collect')
-# 
-# #save plots
-# #ggsave("correlation_heatmaps.png", plot = combined_plot, width = 10, height = 6, units = "in")
-# 
+# Generate heat map for time periods
+time_periods <- unique(data$TimePeriod)
+plot_list <- list()
+
+for (time_period in 1:length(time_periods)) {
+  if (time_period == 1) {
+    plot <- generate_heat_map(time_period, show_legend = TRUE)
+    print(plot)
+    #save plot
+    plot_type <- "correlation_map_timeperiod_"
+    file_ext <- ".png"
+    plot_name <- paste(plot_type, time_period, file_ext)
+    ggsave(plot_name, plot = plot, width = 10, height = 6, units = "in")
+    first_plot <- FALSE
+  } else {
+    plot <- generate_heat_map(time_period, show_legend = FALSE)
+    plot(plot)
+    #save plot
+    plot_type <- "correlation_map_timeperiod_"
+    file_ext <- ".png"
+    plot_name <- paste(plot_type, time_period, file_ext)
+    ggsave(plot_name, plot = plot, width = 10, height = 6, units = "in")
+    first_plot <- FALSE
+  }
+}
+
+
+
+
 # combined_plot
 ```
 

@@ -145,10 +145,10 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\FunctionTok{library}\NormalTok{(reshape2)}
+\FunctionTok{library}\NormalTok{(reshape2) }\CommentTok{\#for melt()}
 \FunctionTok{library}\NormalTok{(ggplot2)}
 \FunctionTok{library}\NormalTok{(patchwork)}
-\FunctionTok{library}\NormalTok{(tidyr)}
+\FunctionTok{library}\NormalTok{(tidyr)  }\CommentTok{\#for pivot\_longer}
 \end{Highlighting}
 \end{Shaded}
 
@@ -210,49 +210,81 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# \#Qtn 2 function}
-\CommentTok{\# \# Function to generate a heat map for a given time period}
-\CommentTok{\# generate\_heat\_map \textless{}{-} function(time\_period) \{}
-\CommentTok{\#   filtered\_data \textless{}{-} data[data$TimePeriod == time\_period,]}
-\CommentTok{\#   cor\_matrix \textless{}{-} cor(filtered\_data[,1:4]) \# Assuming the first four columns are the variables}
-\CommentTok{\# }
-\CommentTok{\#   \# Melt the correlation matrix for ggplot}
-\CommentTok{\#   melted\_cor\_matrix \textless{}{-} melt(cor\_matrix)}
-\CommentTok{\# }
-\CommentTok{\#   \# Plot}
-\CommentTok{\#   ggplot(melted\_cor\_matrix, aes(x = Var1, y = Var2, fill = value)) +}
-\CommentTok{\#     geom\_tile() +}
-\CommentTok{\#     geom\_text(aes(label = sprintf("\%.2f", value)), color = "black", size = 3) +}
-\CommentTok{\#     \#scale\_fill\_gradient2(low = "blue", high = "red", mid = "white", }
-\CommentTok{\#    \#                      midpoint = 0, limit = c({-}1,1), space = "Lab", }
-\CommentTok{\#    \#                      name="Pearson\textbackslash{}nCorrelation") +}
-\CommentTok{\#     theme\_minimal() +}
-\CommentTok{\#     theme(axis.text.x = element\_text(angle = 45, vjust = 1, size = 9, hjust = 1, family = "Arial"),}
-\CommentTok{\#           axis.text.y = element\_text(size = 9, family = "Arial"),}
-\CommentTok{\#           plot.title = element\_text(size = 14, family = "Arial")) +}
-\CommentTok{\#     labs(x = \textquotesingle{}\textquotesingle{}, y = \textquotesingle{}\textquotesingle{}, title = paste("Correlation Matrix Heat Map \textbackslash{}n for Time Period", time\_period))}
-\CommentTok{\# \}}
+\CommentTok{\#Qtn 2 function}
+\CommentTok{\# Function to generate a heat map for a given time period}
+\NormalTok{generate\_heat\_map }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(time\_period, show\_y\_axis, show\_legend)\{}
+\NormalTok{  filtered\_data }\OtherTok{\textless{}{-}}\NormalTok{ data[data}\SpecialCharTok{$}\NormalTok{TimePeriod }\SpecialCharTok{==}\NormalTok{ time\_period,]}
+\NormalTok{  df\_corr\_data }\OtherTok{\textless{}{-}} \FunctionTok{select}\NormalTok{(filtered\_data, }\SpecialCharTok{{-}}\NormalTok{TimePeriod)}
+  \CommentTok{\# Assuming df\_corr\_data is your dataframe}
+\NormalTok{  corr\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{cor}\NormalTok{(df\_corr\_data)}
+  
+  \CommentTok{\# \# Melt the correlation matrix for ggplot}
+\NormalTok{  melted\_corr\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{melt}\NormalTok{(corr\_matrix)}
+  \CommentTok{\# Exclude the lower triangle and diagonal}
+  \CommentTok{\# melted\_corr\_matrix$value[melted\_corr\_matrix$Var1 \textgreater{}= melted\_corr\_matrix$Var2] \textless{}{-} NA}
+  
+  \CommentTok{\# Plot}
+\NormalTok{  p }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(melted\_corr\_matrix, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ Var1, }\AttributeTok{y =}\NormalTok{ Var2, }\AttributeTok{fill =}\NormalTok{ value)) }\SpecialCharTok{+}
+    \FunctionTok{geom\_tile}\NormalTok{() }\SpecialCharTok{+}
+    \FunctionTok{geom\_text}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{label =} \FunctionTok{sprintf}\NormalTok{(}\StringTok{"\%.2f"}\NormalTok{, value)), }\AttributeTok{color =} \StringTok{"black"}\NormalTok{, }\AttributeTok{size =} \DecValTok{3}\NormalTok{) }\SpecialCharTok{+} \CommentTok{\# Adds text labels}
+    \FunctionTok{scale\_fill\_gradient2}\NormalTok{(}\AttributeTok{low =} \StringTok{"blue"}\NormalTok{, }\AttributeTok{high =} \StringTok{"red"}\NormalTok{, }\AttributeTok{mid =} \StringTok{"white"}\NormalTok{,}
+                        \AttributeTok{midpoint =} \DecValTok{0}\NormalTok{, }\AttributeTok{limit =} \FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{), }\AttributeTok{space =} \StringTok{"Lab"}\NormalTok{,}
+                        \AttributeTok{name=}\StringTok{"Correlation"}\NormalTok{) }\SpecialCharTok{+}
+    \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+    \FunctionTok{labs}\NormalTok{(}\AttributeTok{x =} \StringTok{\textquotesingle{}\textquotesingle{}}\NormalTok{, }\AttributeTok{y =} \StringTok{\textquotesingle{}\textquotesingle{}}\NormalTok{) }\SpecialCharTok{+}
+    \FunctionTok{coord\_fixed}\NormalTok{()}
+
+
+  \ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!}\NormalTok{show\_legend) \{}
+\NormalTok{    p }\OtherTok{\textless{}{-}}\NormalTok{ p }\SpecialCharTok{+} \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"none"}\NormalTok{)}
+\NormalTok{  \} }\ControlFlowTok{else}\NormalTok{ \{}
+    \CommentTok{\# Position the legend to the left of the chart}
+\NormalTok{    p }\OtherTok{\textless{}{-}}\NormalTok{ p }\SpecialCharTok{+} \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"left"}\NormalTok{)}
+\NormalTok{  \}}
+  \FunctionTok{return}\NormalTok{(p)}
+\NormalTok{\}}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{\# \#Q2 cntd}
-\CommentTok{\# \# Generate heat map for time periods}
-\CommentTok{\# time\_periods \textless{}{-} unique(data$TimePeriod)}
-\CommentTok{\# plot\_list \textless{}{-} list()}
-\CommentTok{\# }
-\CommentTok{\# for (time\_period in time\_periods) \{}
-\CommentTok{\#   plot\_list[[time\_period]] \textless{}{-} generate\_heat\_map(time\_period)}
-\CommentTok{\# \}}
-\CommentTok{\# }
-\CommentTok{\# \# Combine the plots. Adjust the layout with \textasciigrave{}plot\_layout()\textasciigrave{}}
-\CommentTok{\# combined\_plot \textless{}{-} wrap\_plots(plot\_list, ncol = 3) + }
-\CommentTok{\#   plot\_layout(guides = \textquotesingle{}collect\textquotesingle{})}
-\CommentTok{\# }
-\CommentTok{\# \#save plots}
-\CommentTok{\# \#ggsave("correlation\_heatmaps.png", plot = combined\_plot, width = 10, height = 6, units = "in")}
-\CommentTok{\# }
+\CommentTok{\# Generate heat map for time periods}
+\NormalTok{time\_periods }\OtherTok{\textless{}{-}} \FunctionTok{unique}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{TimePeriod)}
+\NormalTok{plot\_list }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{()}
+
+\ControlFlowTok{for}\NormalTok{ (time\_period }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\FunctionTok{length}\NormalTok{(time\_periods)) \{}
+  \ControlFlowTok{if}\NormalTok{ (time\_period }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) \{}
+\NormalTok{    plot }\OtherTok{\textless{}{-}} \FunctionTok{generate\_heat\_map}\NormalTok{(time\_period, }\AttributeTok{show\_legend =} \ConstantTok{TRUE}\NormalTok{)}
+    \FunctionTok{print}\NormalTok{(plot)}
+    \CommentTok{\#save plot}
+\NormalTok{    plot\_type }\OtherTok{\textless{}{-}} \StringTok{"correlation\_map\_timeperiod\_"}
+\NormalTok{    file\_ext }\OtherTok{\textless{}{-}} \StringTok{".png"}
+\NormalTok{    plot\_name }\OtherTok{\textless{}{-}} \FunctionTok{paste}\NormalTok{(plot\_type, time\_period, file\_ext)}
+    \FunctionTok{ggsave}\NormalTok{(plot\_name, }\AttributeTok{plot =}\NormalTok{ plot, }\AttributeTok{width =} \DecValTok{10}\NormalTok{, }\AttributeTok{height =} \DecValTok{6}\NormalTok{, }\AttributeTok{units =} \StringTok{"in"}\NormalTok{)}
+\NormalTok{    first\_plot }\OtherTok{\textless{}{-}} \ConstantTok{FALSE}
+\NormalTok{  \} }\ControlFlowTok{else}\NormalTok{ \{}
+\NormalTok{    plot }\OtherTok{\textless{}{-}} \FunctionTok{generate\_heat\_map}\NormalTok{(time\_period, }\AttributeTok{show\_legend =} \ConstantTok{FALSE}\NormalTok{)}
+    \FunctionTok{plot}\NormalTok{(plot)}
+    \CommentTok{\#save plot}
+\NormalTok{    plot\_type }\OtherTok{\textless{}{-}} \StringTok{"correlation\_map\_timeperiod\_"}
+\NormalTok{    file\_ext }\OtherTok{\textless{}{-}} \StringTok{".png"}
+\NormalTok{    plot\_name }\OtherTok{\textless{}{-}} \FunctionTok{paste}\NormalTok{(plot\_type, time\_period, file\_ext)}
+    \FunctionTok{ggsave}\NormalTok{(plot\_name, }\AttributeTok{plot =}\NormalTok{ plot, }\AttributeTok{width =} \DecValTok{10}\NormalTok{, }\AttributeTok{height =} \DecValTok{6}\NormalTok{, }\AttributeTok{units =} \StringTok{"in"}\NormalTok{)}
+\NormalTok{    first\_plot }\OtherTok{\textless{}{-}} \ConstantTok{FALSE}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{CA1_files/figure-latex/unnamed-chunk-6-1.pdf}
+\includegraphics{CA1_files/figure-latex/unnamed-chunk-6-2.pdf}
+\includegraphics{CA1_files/figure-latex/unnamed-chunk-6-3.pdf}
+\includegraphics{CA1_files/figure-latex/unnamed-chunk-6-4.pdf}
+\includegraphics{CA1_files/figure-latex/unnamed-chunk-6-5.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
 \CommentTok{\# combined\_plot}
 \end{Highlighting}
 \end{Shaded}
