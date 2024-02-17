@@ -4,6 +4,7 @@
 
 ```{r}
 # Load the necessary library
+library(here)
 library(dplyr)
 library(reshape2)
 library(ggplot2)
@@ -14,7 +15,7 @@ library(tidyr)
 
 ```{r}
 # Read the dataset
-data <- read.csv("C:\\Users\\mutse\\OneDrive\\Desktop\\UCT\\Courses\\Multivariate\\scripts\\CA1\\CA1.csv")
+data <- read.csv(here("CA\\CA1\\CA1.csv"))
 str(data)
 ```
 
@@ -75,7 +76,7 @@ for (time_period in time_periods) {
 # Combine the plots. Adjust the layout with `plot_layout()`
 combined_plot <- wrap_plots(plot_list, ncol = 3) + 
   plot_layout(guides = 'collect')
-
+combined_plot
 #save plots
 ggsave("correlation_heatmaps.png", plot = combined_plot, width = 10, height = 6, units = "in")
 ```
@@ -96,15 +97,54 @@ x3_dev <- x3 - mean(x3)
 
 # Calculate the cosine of the angle using the dot product
 cos_angle <- sum(x1_dev * x3_dev) / (sqrt(sum(x1_dev^2)) * sqrt(sum(x3_dev^2)))
-
+cos_angle
 # Calculate the angle in radians
 angle_radians <- acos(cos_angle)
 
 # Convert the angle to degrees
 angle_degrees <- angle_radians * (180 / pi)
 
-angle_radians
+angle_degrees
 ```
+```{r}
+#Qtn 3 Bonus Qtn
+period1_obs2 <- data_period_1[1:2,]
+
+x1_dev <- period1_obs2$MaxBreadth - mean(period1_obs2$MaxBreadth)
+x2_dev <- period1_obs2$BasHeight - mean(period1_obs2$BasHeight)
+x3_dev <- period1_obs2$BasLength - mean(period1_obs2$BasLength)
+x4_dev <- period1_obs2$NasHeight - mean(period1_obs2$NasHeight)
+
+dev_vectors <- rbind(c(x1_dev), c(x2_dev), c(x3_dev), c(x4_dev))
+dev_vectors
+
+dev_vectors_df <- data.frame(
+        "x" = dev_vectors[,1],
+        'y' = dev_vectors[,2],
+        'vector' = c('x1', 'x2', 'x3', 'x4'))
+dev_vectors_df
+
+
+```
+
+
+```{r}
+#Qtn 3 Bonus Qtn ctnd
+# Plot vectors
+ggplot(dev_vectors_df, aes(xend = x, yend = y)) +
+  geom_segment(aes(x = 1, y = 1, xend = x, yend = y), 
+               arrow = arrow(type = "closed", length = unit(0.1, "inches")),
+               color = "blue",
+               linetype = "dotted") +
+  geom_text(aes(x = x, y = y, label = vector), nudge_x = 0.2, nudge_y = 0.2, color = "red") +
+  coord_fixed() + 
+  theme_minimal() +
+  labs(title = "Deviation Vectors", x = "X Axis", y = "Y Axis")
+
+
+```
+
+
 
 ```{r}
 #Qtn 4
