@@ -2,13 +2,14 @@
 title: "Honours Multivariate Continuous Assessment 1"
 author: "Molemo Mafora , Tashmira Subramoney , Tinotenda Mutsemi"
 date: "`r Sys.Date()`"
-output: 
-  pdf_document:
-        latex_engine: xelatex  
+output:
+  html_document:
+    df_print: paged
   highlight: tango
+  pdf_document:
+    latex_engine: xelatex
 fig_caption: yes
-header-includes:
-  - "\\usepackage{graphicx}" 
+header-includes: \usepackage{graphicx}
 ---
 __________________________________________________________________________________________________________________
 ```{r setup, include=FALSE}
